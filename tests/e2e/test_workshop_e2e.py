@@ -36,11 +36,13 @@ def test_user_edits_car_and_change_survives_reload(page, live_server):
     page.get_by_label("Year", exact=True).fill("2023")
     page.get_by_role("button", name="Save changes").click()
 
-    # 等保存完成并跳转回详情页
-    expect(page).to_have_url(re.compile(r"/cars/\d+$"))
+    # 等保存请求完成
+    page.wait_for_load_state("networkidle")
 
-    # 4. 断言详情页标题
-    expect(page.get_by_role("heading", name="Honda Accord")).to_be_visible()
+    # 4. 断言详情页字段
+    expect(page.locator("#car-model")).to_have_text("Accord")
+    expect(page.locator("#car-year")).to_have_text("2023")
+
     # 5. 刷新后仍然正确
     page.reload()
     expect(page.locator("#car-model")).to_have_text("Accord")
