@@ -34,6 +34,12 @@ def test_user_edits_car_and_change_survives_reload(page, live_server):
     )
     page.get_by_role("link", name="Edit car").click()
 
+    # 等 URL 真的变成编辑页
+    expect(page).to_have_url(re.compile(r"/cars/\d+/edit$"))
+
+    # 等编辑表单加载完成（Model 的值是 Civic）
+    expect(page.get_by_label("Model", exact=True)).to_have_value("Civic")
+
     # 3. 改成 Accord / 2023
     page.get_by_label("Model", exact=True).fill("Accord")
     page.get_by_label("Year", exact=True).fill("2023")
