@@ -28,16 +28,29 @@ def test_user_edits_car_and_change_survives_reload(page, live_server):
     expect(page).to_have_url(re.compile(r"/cars/\d+$"))
     expect(page.get_by_role("heading", name="Honda Civic")).to_be_visible()
 
-    # 2. 点击 Edit car
+    # 2. 等 JS 设置好编辑链接，再点击
+    expect(page.locator("#edit-link")).to_have_attribute(
+        "href", re.compile(r"/cars/\d+/edit$")
+    )
     page.get_by_role("link", name="Edit car").click()
+
+    # 等 URL 真的变成编辑页
+    expect(page).to_have_url(re.compile(r"/cars/\d+/edit$"))
+
+    # 等编辑表单加载完成（Model 的值是 Civic）
+    expect(page.get_by_label("Model", exact=True)).to_have_value("Civic")
 
     # 3. 改成 Accord / 2023
     page.get_by_label("Model", exact=True).fill("Accord")
     page.get_by_label("Year", exact=True).fill("2023")
     page.get_by_role("button", name="Save changes").click()
 
-    # 4. 断言详情页标题
-    expect(page.get_by_role("heading", name="Honda Accord")).to_be_visible()
+    # 等保存请求完成
+    page.wait_for_load_state("networkidle")
+
+    # 4. 断言详情页字段
+    expect(page.locator("#car-model")).to_have_text("Accord")
+    expect(page.locator("#car-year")).to_have_text("2023")
 
     # 5. 刷新后仍然正确
     page.reload()
