@@ -28,7 +28,10 @@ def test_user_edits_car_and_change_survives_reload(page, live_server):
     expect(page).to_have_url(re.compile(r"/cars/\d+$"))
     expect(page.get_by_role("heading", name="Honda Civic")).to_be_visible()
 
-    # 2. 点击 Edit car
+    # 2. 等 JS 设置好编辑链接，再点击
+    expect(page.locator("#edit-link")).to_have_attribute(
+        "href", re.compile(r"/cars/\d+/edit$")
+    )
     page.get_by_role("link", name="Edit car").click()
 
     # 3. 改成 Accord / 2023
